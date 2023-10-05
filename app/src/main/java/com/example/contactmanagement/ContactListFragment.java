@@ -1,25 +1,31 @@
 package com.example.contactmanagement;
 
-import android.app.Activity;
-import android.content.ContentResolver;
-import android.content.Intent;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.ContactsContract;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.util.List;
+import android.Manifest;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -38,6 +44,8 @@ public class ContactListFragment extends Fragment {
     private String mParam2;
     private List<Contact> contactList;
     private ContactListRecyclerViewAdapter adapter;
+    private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 123;
+    private ImageView profileImage;
 
     public ContactListFragment() {
 
@@ -82,7 +90,7 @@ public class ContactListFragment extends Fragment {
         ContactDAO contactDAO = MainActivity.database.contactDao();
         contactList = contactDAO.getAllContacts();
 
-        ContactListRecyclerViewAdapter adapter = new ContactListRecyclerViewAdapter(contactList);
+        adapter = new ContactListRecyclerViewAdapter(contactList);
         recyclerView.setAdapter(adapter);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
@@ -122,135 +130,134 @@ public class ContactListFragment extends Fragment {
 
         ImportButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
-                startActivityForResult(intent, 1);
+            public void onClick(View view)
+            {
+                importContactsFromDevice();
             }
         });
     }
 
+    private void importContactsFromDevice() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.READ_CONTACTS}, MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+            return;
+        }
 
+        Uri contactsUri = ContactsContract.Contacts.CONTENT_URI;
+        String[] projection = {
+                ContactsContract.Contacts._ID,
+                ContactsContract.Contacts.DISPLAY_NAME_PRIMARY,
+        };
 
+        Cursor cursor = requireActivity().getContentResolver().query(contactsUri, projection, null, null, null);
 
+        if (cursor != null) {
+            try {
+                while (cursor.moveToNext()) {
+                    String contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
+                    String phoneNumber = getPhoneNumber(cursor);
+                    String emailAddress = getEmailAddress(cursor);
+                    long phoneNoLong = Long.parseLong(phoneNumber);
 
+                    if (!isContactDuplicate(contactName))
+                    {
+                        Contact newContact = new Contact(phoneNoLong, contactName, emailAddress, imageToByteArray(requireContext(), R.drawable.cat));
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private void getContactList() {
-        ContentResolver cr = requireActivity().getContentResolver();
-        Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI,
-                null, null, null, null);
-
-        if ((cur != null ? cur.getCount() : 0) > 0) {
-            while (cur != null && cur.moveToNext()) {
-                String id = cur.getString(
-                        cur.getColumnIndex(ContactsContract.Contacts._ID));
-                String name = cur.getString(cur.getColumnIndex(
-                        ContactsContract.Contacts.DISPLAY_NAME));
-
-                if (cur.getInt(cur.getColumnIndex(
-                        ContactsContract.Contacts.HAS_PHONE_NUMBER)) > 0) {
-                    Cursor pCur = cr.query(
-                            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                            null,
-                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                            new String[]{id}, null);
-                    while (pCur.moveToNext()) {
-                        String phoneNo = pCur.getString(pCur.getColumnIndex(
-                                ContactsContract.CommonDataKinds.Phone.NUMBER));
-                        Log.i("ContactListFragment", "Name: " + name);
-                        Log.i("ContactListFragment", "Phone Number: " + phoneNo);
+                        ContactDAO contactDAO = MainActivity.database.contactDao();
+                        contactDAO.insert(newContact);
                     }
-                    pCur.close();
                 }
             }
+            finally
+            {
+                cursor.close();
+            }
+
+            adapter.notifyDataSetChanged();
+            Toast.makeText(requireContext(), "Contacts imported successfully!", Toast.LENGTH_SHORT).show();
         }
-        if (cur != null) {
-            cur.close();
+        else
+        {
+            Toast.makeText(requireContext(), "No contacts found on the device.", Toast.LENGTH_SHORT).show();
         }
     }
-}
 
-
-   /* @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
-            Uri contactData = data.getData();
-            if (contactData != null) {
-                ContentResolver cr = requireActivity().getContentResolver();
-                Cursor cursor = cr.query(contactData, null, null, null, null);
-                if (cursor != null && cursor.moveToFirst()) {
-                    // Get the contact's name
-                    int nameColumnIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
-                    String name = (nameColumnIndex != -1) ? cursor.getString(nameColumnIndex) : "";
-
-                    // Get the contact's email (if available)
-                    String email = "";
-                    int emailColumnIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA);
-                    if (emailColumnIndex != -1) {
-                        Cursor emailCursor = cr.query(
-                                ContactsContract.CommonDataKinds.Email.CONTENT_URI,
-                                null,
-                                ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
-                                new String[]{cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID))},
-                                null
-                        );
-                        if (emailCursor != null && emailCursor.moveToFirst()) {
-                            email = emailCursor.getString(emailCursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
-                            emailCursor.close();
-                        }
-                    }
-
-                    // Get the contact's phone number (if available)
-                    String phone = "";
-                    int phoneColumnIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
-                    if (phoneColumnIndex != -1) {
-                        Cursor phoneCursor = cr.query(
-                                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                                null,
-                                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                                new String[]{cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID))},
-                                null
-                        );
-                        if (phoneCursor != null && phoneCursor.moveToFirst()) {
-                            phone = phoneCursor.getString(phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                            phoneCursor.close();
-                        }
-                    }
-
-                    // Now, you have the name, email, and phone number
-                    Log.i("ContactListFragment", "Name: " + name);
-                    if (!email.isEmpty()) {
-                        Log.i("ContactListFragment", "Email: " + email);
-                    }
-                    if (!phone.isEmpty()) {
-                        Log.i("ContactListFragment", "Phone Number: " + phone);
-                    }
-
-                    // Close the cursor
-                    cursor.close();
-                }
+    private boolean isContactDuplicate(String contactName)
+    {
+        for (Contact contact : contactList)
+        {
+            if (contact.getName().equalsIgnoreCase(contactName))
+            {
+                return true;
             }
         }
-    }*/
+        return false;
+    }
 
+    private String getPhoneNumber(Cursor cursor)
+    {
+        String phoneNumber = "";
+        String contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
+        Cursor phoneCursor = requireActivity().getContentResolver().query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                null,
+                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                new String[]{contactId},
+                null
+        );
 
+        if(phoneCursor != null)
+        {
+            try
+            {
+                if (phoneCursor.moveToFirst())
+                {
+                    phoneNumber = phoneCursor.getString(phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                }
+            }
+            finally
+            {
+                phoneCursor.close();
+            }
+        }
+
+        return phoneNumber;
+    }
+
+    private String getEmailAddress(Cursor cursor)
+    {
+        String emailAddress = "";
+        String contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
+        Cursor emailCursor = requireActivity().getContentResolver().query(
+                ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+                null,
+                ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
+                new String[]{contactId},
+                null
+        );
+
+        if (emailCursor != null)
+        {
+            try
+            {
+                if (emailCursor.moveToFirst())
+                {
+                    emailAddress = emailCursor.getString(emailCursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS));
+                }
+            }
+            finally
+            {
+                emailCursor.close();
+            }
+        }
+
+        return emailAddress;
+    }
+    private static byte[] imageToByteArray(Context context, int resourceId)
+    {
+        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), resourceId);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        return stream.toByteArray();
+    }
+}
