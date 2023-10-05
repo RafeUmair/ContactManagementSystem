@@ -1,5 +1,8 @@
 package com.example.contactmanagement;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -10,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 /**
@@ -31,6 +35,9 @@ public class AddContactsFragment extends Fragment {
     private EditText phoneNoEditText;
     private EditText emailEditText;
 
+    private static final int CAMERA_PIC_REQUEST = 1;
+
+    private ImageView ProfileImage;
     public AddContactsFragment() {
         // Required empty public constructor
     }
@@ -69,12 +76,23 @@ public class AddContactsFragment extends Fragment {
 
         Button GoBack = rootView.findViewById(R.id.EditBackButton);
         Button AddContacts = rootView.findViewById(R.id.EditContactButton);
+        Button cameraButton = rootView.findViewById(R.id.cameraButton);
         nameEditText = rootView.findViewById(R.id.ContactName);
         phoneNoEditText = rootView.findViewById(R.id.phoneNO);
         emailEditText = rootView.findViewById(R.id.EmailAddress);
+        ProfileImage = rootView.findViewById(R.id.profileImage);
 
 
         setupListeners(GoBack, AddContacts);
+
+        cameraButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+                startActivityForResult(intent, CAMERA_PIC_REQUEST); // Use startActivityForResult
+            }
+        });
+
         return rootView;
     }
 
@@ -86,6 +104,15 @@ public class AddContactsFragment extends Fragment {
         emailEditText.setText("");
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CAMERA_PIC_REQUEST && resultCode == Activity.RESULT_OK) {
+            Bitmap image = (Bitmap) data.getExtras().get("data");
+            ImageView imageview = getView().findViewById(R.id.profileImage); // Use getView() to find the ImageView
+            imageview.setImageBitmap(image);
+        }
+    }
     private void setupListeners(Button GoBack, Button AddContacts)
     {
         MainActivityData mainActivityDataViewModel = new ViewModelProvider(getActivity()).get(MainActivityData.class);
@@ -140,5 +167,8 @@ public class AddContactsFragment extends Fragment {
                 }
             }
         });
+
+
     }
+
 }
