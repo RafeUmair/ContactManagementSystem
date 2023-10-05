@@ -11,8 +11,8 @@ public abstract class ContactDatabase extends RoomDatabase {
         ContactDAO contactDAO = database.contactDao();
 
         //need to find alternative to using Long as phoneNo
-        Contact contact1 = new Contact(1234567890L, "john", "john@example.com", R.drawable.bear);
-        Contact contact2 = new Contact(4234L, "jane", "jane@example.com", R.drawable.cat);
+        Contact contact1 = new Contact(1234567890, "john", "john@example.com", R.drawable.bear);
+        Contact contact2 = new Contact(4234, "jane", "jane@example.com", R.drawable.cat);
 
         contactDAO.insert(contact1);
         contactDAO.insert(contact2);

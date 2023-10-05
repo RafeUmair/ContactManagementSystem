@@ -6,7 +6,6 @@ import androidx.room.PrimaryKey;
 
 @Entity(tableName = "Contacts")
 public class Contact {
-
     @PrimaryKey(autoGenerate = true)
     private long phoneNo;
 

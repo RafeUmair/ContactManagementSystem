@@ -73,8 +73,17 @@ public class AddContactsFragment extends Fragment {
         phoneNoEditText = rootView.findViewById(R.id.phoneNO);
         emailEditText = rootView.findViewById(R.id.EmailAddress);
 
+
         setupListeners(GoBack, AddContacts);
         return rootView;
+    }
+
+    public void onResume()
+    {
+        super.onResume();
+        nameEditText.setText("");
+        phoneNoEditText.setText("");
+        emailEditText.setText("");
     }
 
     private void setupListeners(Button GoBack, Button AddContacts)
@@ -99,21 +108,29 @@ public class AddContactsFragment extends Fragment {
 
                 if (!name.isEmpty() && !phoneNo.isEmpty() && !email.isEmpty())
                 {
-                    try
+                    if(!email.contains("example.com"))
                     {
-                        long phoneNoLong = Long.parseLong(phoneNo);
-
-                        Contact newContact = new Contact(phoneNoLong, name, email, R.drawable.cat);
-
-                        ContactDAO contactDAO = MainActivity.database.contactDao();
-                        contactDAO.insert(newContact);
-
-                        mainActivityDataViewModel.changeFragment(MainActivityData.Fragments.CONTACTLIST_FRAGMENT);
+                        Toast.makeText(getActivity(), "Invalid email address", Toast.LENGTH_SHORT).show();
                     }
 
-                    catch (NumberFormatException e)
+                    else
                     {
-                        Toast.makeText(getActivity(), "Invalid phone number", Toast.LENGTH_SHORT).show();
+                        try
+                        {
+                            long phoneNoLong = Long.parseLong(phoneNo);
+
+                            Contact newContact = new Contact(phoneNoLong, name, email, R.drawable.cat);
+
+                            ContactDAO contactDAO = MainActivity.database.contactDao();
+                            contactDAO.insert(newContact);
+
+                            mainActivityDataViewModel.changeFragment(MainActivityData.Fragments.CONTACTLIST_FRAGMENT);
+                        }
+
+                        catch(NumberFormatException e)
+                        {
+                            Toast.makeText(getActivity(), "Invalid phone number", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
 

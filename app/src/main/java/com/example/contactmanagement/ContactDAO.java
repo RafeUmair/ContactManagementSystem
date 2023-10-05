@@ -22,7 +22,6 @@ public interface ContactDAO {
     @Update
     void update(Contact contact);
 
-
     @Query("SELECT * FROM contacts")
     List<Contact> getAllContacts();
 

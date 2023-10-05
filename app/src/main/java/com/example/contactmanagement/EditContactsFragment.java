@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -89,6 +90,20 @@ public class EditContactsFragment extends Fragment {
         return rootView;
     }
 
+    public void updatePhoneNumber(Contact oldContact, long newPhoneNumber)
+    {
+        Contact newContact = new Contact(newPhoneNumber, oldContact.getName(), oldContact.getEmail(), oldContact.getPhotoResourceId());
+        ContactDAO contactDAO = MainActivity.database.contactDao();
+        contactDAO.insert(newContact);
+
+        newContact.setName(oldContact.getName());
+        newContact.setEmail(oldContact.getEmail());
+        newContact.setPhotoResourceId(oldContact.getPhotoResourceId());
+
+        contactDAO.update(newContact);
+
+        contactDAO.delete(oldContact);
+    }
     private void setupListeners(Button GobackEditButton, Button editContactButton)
     {
         MainActivityData mainActivityDataViewModel = new ViewModelProvider(getActivity()).get(MainActivityData.class);
@@ -103,20 +118,43 @@ public class EditContactsFragment extends Fragment {
 
         editContactButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view)
-            {
+            public void onClick(View view) {
                 String updatedName = contactNameEditText.getText().toString();
                 String updatedEmail = emailEditText.getText().toString();
-                String updatePhoneNO = phoneNoEditText.getText().toString().trim();
-                long phoneNoLong = Long.parseLong(updatePhoneNO);
+                String phoneNo = phoneNoEditText.getText().toString();
 
-                contact.setName(updatedName);
-                contact.setEmail(updatedEmail);
-                contact.setPhoneNo(phoneNoLong);
+                if (updatedName.isEmpty() || phoneNo.isEmpty() || updatedEmail.isEmpty())
+                {
+                    Toast.makeText(getActivity(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
+                }
 
-                ContactDAO contactDAO = MainActivity.database.contactDao();
-                contactDAO.update(contact);
-                getActivity().getSupportFragmentManager().popBackStack();
+                else if (!updatedEmail.contains("example.com"))
+                {
+                    Toast.makeText(getActivity(), "Invalid email address", Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    try
+                    {
+                        long phoneNoLong = Long.parseLong(phoneNo);
+                        if (phoneNoLong != contact.getPhoneNo()) {
+                            updatePhoneNumber(contact, phoneNoLong);
+                        }
+
+                        contact.setName(updatedName);
+                        contact.setEmail(updatedEmail);
+
+                        ContactDAO contactDAO = MainActivity.database.contactDao();
+                        contactDAO.update(contact);
+
+                        getActivity().getSupportFragmentManager().popBackStack();
+                    }
+
+                    catch (NumberFormatException e)
+                    {
+                        Toast.makeText(getActivity(), "Invalid phone number", Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
         });
     }
