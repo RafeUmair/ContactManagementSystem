@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -30,6 +31,7 @@ public class EditContactsFragment extends Fragment {
     EditText contactNameEditText;
     EditText phoneNoEditText;
     EditText emailEditText;
+    ImageView imageEdit;
 
     public EditContactsFragment() {
         // Required empty public constructor
@@ -73,10 +75,12 @@ public class EditContactsFragment extends Fragment {
         contactNameEditText = rootView.findViewById(R.id.ContactName);
         phoneNoEditText = rootView.findViewById(R.id.phoneNO);
         emailEditText = rootView.findViewById(R.id.EmailAddress);
+        imageEdit = rootView.findViewById(R.id.imageView);
 
         contactNameEditText.setText(contact.getName());
         phoneNoEditText.setText(String.valueOf(contact.getPhoneNo()));
         emailEditText.setText(contact.getEmail());
+        imageEdit.setImageResource(contact.getPhotoResourceId());
 
         Button editContactButton = rootView.findViewById(R.id.EditContactButton);
         Button GobackEditButton = rootView.findViewById(R.id.EditBackButton);
