@@ -31,18 +31,17 @@ public class MainActivity extends AppCompatActivity {
 
         database = ContactDBInstance.getDatabase(this);
 
-        // Check if the database is empty, and insert sample data if needed
         ContactDAO contactDAO = database.contactDao();
         if (contactDAO.getAllContacts().isEmpty()) {
             ContactDatabase.insertSampleData(database);
         }
 
-        // Retrieve the list of contacts
         contactList = contactDAO.getAllContacts();
         Log.d("MainActivity", "Contact list size: " + contactList.size());
 
         loadInitialContactList();
     }
+
 
     private void loadInitialContactList()
     {

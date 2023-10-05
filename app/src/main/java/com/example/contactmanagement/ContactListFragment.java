@@ -30,8 +30,11 @@ public class ContactListFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private List<Contact> contactList;
+    private ContactListRecyclerViewAdapter adapter;
 
     public ContactListFragment() {
+
         // Required empty public constructor
     }
 
@@ -62,7 +65,6 @@ public class ContactListFragment extends Fragment {
         }
     }
 
-    private List<Contact> contactList;;
 
 
     @Override
@@ -84,6 +86,25 @@ public class ContactListFragment extends Fragment {
         layoutManager.setOrientation(RecyclerView.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);
 
+        // Set up the OnDeleteClickListener for the adapter
+        adapter.setOnDeleteClickListener(new ContactListRecyclerViewAdapter.OnDeleteClickListener() {
+            @Override
+            public void onDeleteClick(int position) {
+                long phoneNoToDelete = contactList.get(position).getPhoneNo();
+                contactDAO.deleteByPhoneNo(phoneNoToDelete);
+                contactList.remove(position);
+                adapter.notifyItemRemoved(position);
+
+                // You can remove the item from the list and update the RecyclerView
+                // You may also want to update the database to reflect the changes
+                // Example: contactDAO.deleteContact(contactList.get(position));
+                // Then, update the list and notify the adapter
+                // contactList.remove(position);
+                // adapter.notifyItemRemoved(position);
+            }
+        });
+
+
         return rootView;
     }
 
@@ -100,4 +121,6 @@ public class ContactListFragment extends Fragment {
             }
         });
     }
+
+
 }

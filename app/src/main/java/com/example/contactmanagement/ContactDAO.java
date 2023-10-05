@@ -25,4 +25,8 @@ public interface ContactDAO {
 
     @Query("SELECT * FROM contacts")
     List<Contact> getAllContacts();
+
+    @Query("DELETE FROM contacts WHERE phoneNo = :phoneNo")
+    void deleteByPhoneNo(long phoneNo); // Add this method to delete a contact by phone number
+
 }
