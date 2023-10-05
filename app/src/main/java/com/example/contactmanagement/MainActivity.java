@@ -5,22 +5,41 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.room.Room;
+import androidx.room.RoomDatabase;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private ContactListFragment ContactList = new ContactListFragment();
     private AddContactsFragment AddContacts = new AddContactsFragment();
+    public static ContactDatabase database;
+
+    private List<Contact> contactList; // Declare the list here
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         MainActivityData mainActivityDataViewModel = new ViewModelProvider(this).get(MainActivityData.class);
         setupFragmentSwapper(mainActivityDataViewModel);
+
+        database = ContactDBInstance.getDatabase(this);
+
+        // Check if the database is empty, and insert sample data if needed
+        ContactDAO contactDAO = database.contactDao();
+        if (contactDAO.getAllContacts().isEmpty()) {
+            ContactDatabase.insertSampleData(database);
+        }
+
+        // Retrieve the list of contacts
+        contactList = contactDAO.getAllContacts();
+        Log.d("MainActivity", "Contact list size: " + contactList.size());
 
         loadInitialContactList();
     }
@@ -29,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     {
         FragmentManager fm = getSupportFragmentManager();
         Fragment frag = fm.findFragmentById(R.id.ContactList_Container);
+
 
         View ContactListContainer = findViewById(R.id.ContactList_Container);
         if (frag == null) {

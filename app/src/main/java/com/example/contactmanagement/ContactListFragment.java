@@ -4,11 +4,16 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import com.example.contactmanagement.ContactListRecyclerViewAdapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -57,16 +62,33 @@ public class ContactListFragment extends Fragment {
         }
     }
 
+    private List<Contact> contactList;;
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_contact_list, container, false);
+        RecyclerView recyclerView = rootView.findViewById(R.id.recyclerView);
         Button AddButton = rootView.findViewById(R.id.AddButton);
 
         setupListeners(AddButton);
 
+        // Initialize contactList with data from the database
+        ContactDAO contactDAO = MainActivity.database.contactDao();
+        contactList = contactDAO.getAllContacts();
+
+        ContactListRecyclerViewAdapter adapter = new ContactListRecyclerViewAdapter(contactList);
+        recyclerView.setAdapter(adapter);
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        layoutManager.setOrientation(RecyclerView.VERTICAL);
+        recyclerView.setLayoutManager(layoutManager);
+
         return rootView;
     }
+
+
+
 
     private void setupListeners(Button AddButton) {
         MainActivityData mainActivityDataViewModel = new ViewModelProvider(getActivity()).get(MainActivityData.class);
