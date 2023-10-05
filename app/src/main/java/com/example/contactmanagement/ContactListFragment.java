@@ -75,7 +75,6 @@ public class ContactListFragment extends Fragment {
 
         setupListeners(AddButton);
 
-        // Initialize contactList with data from the database
         ContactDAO contactDAO = MainActivity.database.contactDao();
         contactList = contactDAO.getAllContacts();
 
@@ -94,13 +93,6 @@ public class ContactListFragment extends Fragment {
                 contactDAO.deleteByPhoneNo(phoneNoToDelete);
                 contactList.remove(position);
                 adapter.notifyItemRemoved(position);
-
-                // You can remove the item from the list and update the RecyclerView
-                // You may also want to update the database to reflect the changes
-                // Example: contactDAO.deleteContact(contactList.get(position));
-                // Then, update the list and notify the adapter
-                // contactList.remove(position);
-                // adapter.notifyItemRemoved(position);
             }
         });
 

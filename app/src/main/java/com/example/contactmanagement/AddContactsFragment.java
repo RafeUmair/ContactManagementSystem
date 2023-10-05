@@ -77,17 +77,20 @@ public class AddContactsFragment extends Fragment {
         return rootView;
     }
 
-    private void setupListeners(Button GoBack, Button AddContacts) {
+    private void setupListeners(Button GoBack, Button AddContacts)
+    {
         MainActivityData mainActivityDataViewModel = new ViewModelProvider(getActivity()).get(MainActivityData.class);
 
-        GoBack.setOnClickListener(new View.OnClickListener() {
+        GoBack.setOnClickListener(new View.OnClickListener()
+        {
             @Override
             public void onClick(View view) {
                 mainActivityDataViewModel.changeFragment(MainActivityData.Fragments.CONTACTLIST_FRAGMENT);
             }
         });
 
-        AddContacts.setOnClickListener(new View.OnClickListener() {
+        AddContacts.setOnClickListener(new View.OnClickListener()
+        {
             @Override
             public void onClick(View view) {
                 String name = nameEditText.getText().toString();
