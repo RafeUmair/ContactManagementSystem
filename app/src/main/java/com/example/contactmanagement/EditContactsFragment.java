@@ -90,18 +90,17 @@ public class EditContactsFragment extends Fragment {
         return rootView;
     }
 
-    public void updatePhoneNumber(Contact oldContact, long newPhoneNumber)
+    public void updateContact(Contact oldContact, long newPhoneNumber, String updatedName, String updatedEmail)
     {
-        Contact newContact = new Contact(newPhoneNumber, oldContact.getName(), oldContact.getEmail(), oldContact.getPhotoResourceId());
+        Contact newContact = new Contact(newPhoneNumber, updatedName, updatedEmail, oldContact.getPhotoResourceId());
         ContactDAO contactDAO = MainActivity.database.contactDao();
         contactDAO.insert(newContact);
 
-        newContact.setName(oldContact.getName());
-        newContact.setEmail(oldContact.getEmail());
+        newContact.setName(updatedName);
+        newContact.setEmail(updatedEmail);
         newContact.setPhotoResourceId(oldContact.getPhotoResourceId());
 
         contactDAO.update(newContact);
-
         contactDAO.delete(oldContact);
     }
     private void setupListeners(Button GobackEditButton, Button editContactButton)
@@ -116,9 +115,11 @@ public class EditContactsFragment extends Fragment {
             }
         });
 
-        editContactButton.setOnClickListener(new View.OnClickListener() {
+        editContactButton.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view)
+            {
                 String updatedName = contactNameEditText.getText().toString();
                 String updatedEmail = emailEditText.getText().toString();
                 String phoneNo = phoneNoEditText.getText().toString();
@@ -127,7 +128,6 @@ public class EditContactsFragment extends Fragment {
                 {
                     Toast.makeText(getActivity(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
                 }
-
                 else if (!updatedEmail.contains("example.com"))
                 {
                     Toast.makeText(getActivity(), "Invalid email address", Toast.LENGTH_SHORT).show();
@@ -138,7 +138,7 @@ public class EditContactsFragment extends Fragment {
                     {
                         long phoneNoLong = Long.parseLong(phoneNo);
                         if (phoneNoLong != contact.getPhoneNo()) {
-                            updatePhoneNumber(contact, phoneNoLong);
+                            updateContact(contact, phoneNoLong, updatedName, updatedEmail);
                         }
 
                         contact.setName(updatedName);
@@ -149,7 +149,6 @@ public class EditContactsFragment extends Fragment {
 
                         getActivity().getSupportFragmentManager().popBackStack();
                     }
-
                     catch (NumberFormatException e)
                     {
                         Toast.makeText(getActivity(), "Invalid phone number", Toast.LENGTH_SHORT).show();
