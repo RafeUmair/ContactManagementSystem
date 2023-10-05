@@ -9,6 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -25,6 +27,9 @@ public class AddContactsFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private EditText nameEditText;
+    private EditText phoneNoEditText;
+    private EditText emailEditText;
 
     public AddContactsFragment() {
         // Required empty public constructor
@@ -64,13 +69,15 @@ public class AddContactsFragment extends Fragment {
 
         Button GoBack = rootView.findViewById(R.id.AddBackButton);
         Button AddContacts = rootView.findViewById(R.id.AddContactButton);
+        nameEditText = rootView.findViewById(R.id.ContactName);
+        phoneNoEditText = rootView.findViewById(R.id.phoneNO);
+        emailEditText = rootView.findViewById(R.id.EmailAddress);
 
         setupListeners(GoBack, AddContacts);
         return rootView;
     }
 
-    private void setupListeners(Button GoBack, Button AddContacts)
-    {
+    private void setupListeners(Button GoBack, Button AddContacts) {
         MainActivityData mainActivityDataViewModel = new ViewModelProvider(getActivity()).get(MainActivityData.class);
 
         GoBack.setOnClickListener(new View.OnClickListener() {
@@ -83,7 +90,34 @@ public class AddContactsFragment extends Fragment {
         AddContacts.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mainActivityDataViewModel.changeFragment(MainActivityData.Fragments.CONTACTLIST_FRAGMENT);
+                String name = nameEditText.getText().toString();
+                String phoneNo = phoneNoEditText.getText().toString().trim();
+                String email = emailEditText.getText().toString();
+
+                if (!name.isEmpty() && !phoneNo.isEmpty() && !email.isEmpty())
+                {
+                    try
+                    {
+                        long phoneNoLong = Long.parseLong(phoneNo);
+
+                        Contact newContact = new Contact(phoneNoLong, name, email, R.drawable.cat);
+
+                        ContactDAO contactDAO = MainActivity.database.contactDao();
+                        contactDAO.insert(newContact);
+
+                        mainActivityDataViewModel.changeFragment(MainActivityData.Fragments.CONTACTLIST_FRAGMENT);
+                    }
+
+                    catch (NumberFormatException e)
+                    {
+                        Toast.makeText(getActivity(), "Invalid phone number", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                else
+                {
+                    Toast.makeText(getActivity(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

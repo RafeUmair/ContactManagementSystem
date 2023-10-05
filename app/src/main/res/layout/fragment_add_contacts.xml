@@ -31,7 +31,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline11"
         app:layout_constraintVertical_bias="0.296" />
 
-    <TextView
+    <EditText
         android:id="@+id/EmailAddress"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -46,8 +46,8 @@
         app:layout_constraintTop_toBottomOf="@+id/phoneNO"
         app:layout_constraintVertical_bias="0.822" />
 
-    <TextView
-        android:id="@+id/PhoneNO"
+    <EditText
+        android:id="@+id/ContactName"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
@@ -61,7 +61,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline8"
         app:layout_constraintVertical_bias="0.0" />
 
-    <TextView
+    <EditText
         android:id="@+id/phoneNO"
         android:layout_width="0dp"
         android:layout_height="0dp"

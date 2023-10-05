@@ -19,7 +19,6 @@ public class MainActivity extends AppCompatActivity {
     private AddContactsFragment AddContacts = new AddContactsFragment();
     private EditContactsFragment EditContacts = new EditContactsFragment();
     public static ContactDatabase database;
-
     private List<Contact> contactList; // Declare the list here
 
     @Override
