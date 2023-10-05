@@ -5,8 +5,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.room.Room;
-import androidx.room.RoomDatabase;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -19,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
     private AddContactsFragment AddContacts = new AddContactsFragment();
     private EditContactsFragment EditContacts = new EditContactsFragment();
     public static ContactDatabase database;
-    private List<Contact> contactList; // Declare the list here
+    private List<Contact> contactList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
         ContactDAO contactDAO = database.contactDao();
         if (contactDAO.getAllContacts().isEmpty()) {
-            ContactDatabase.insertSampleData(database);
+            ContactDatabase.insertSampleData(database, this);
         }
 
         contactList = contactDAO.getAllContacts();

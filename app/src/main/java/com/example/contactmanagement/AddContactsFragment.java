@@ -16,6 +16,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link AddContactsFragment#newInstance} factory method to
@@ -34,10 +36,9 @@ public class AddContactsFragment extends Fragment {
     private EditText nameEditText;
     private EditText phoneNoEditText;
     private EditText emailEditText;
-
     private static final int CAMERA_PIC_REQUEST = 1;
-
     private ImageView ProfileImage;
+    private byte[] imageData;
     public AddContactsFragment() {
         // Required empty public constructor
     }
@@ -81,8 +82,6 @@ public class AddContactsFragment extends Fragment {
         phoneNoEditText = rootView.findViewById(R.id.phoneNO);
         emailEditText = rootView.findViewById(R.id.EmailAddress);
         ProfileImage = rootView.findViewById(R.id.profileImage);
-
-
         setupListeners(GoBack, AddContacts);
 
         cameraButton.setOnClickListener(new View.OnClickListener() {
@@ -105,12 +104,17 @@ public class AddContactsFragment extends Fragment {
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CAMERA_PIC_REQUEST && resultCode == Activity.RESULT_OK) {
             Bitmap image = (Bitmap) data.getExtras().get("data");
-            ImageView imageview = getView().findViewById(R.id.profileImage); // Use getView() to find the ImageView
+            ImageView imageview = getView().findViewById(R.id.profileImage);
             imageview.setImageBitmap(image);
+
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            imageData = stream.toByteArray();
         }
     }
     private void setupListeners(Button GoBack, Button AddContacts)
@@ -125,8 +129,7 @@ public class AddContactsFragment extends Fragment {
             }
         });
 
-        AddContacts.setOnClickListener(new View.OnClickListener()
-        {
+        AddContacts.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String name = nameEditText.getText().toString();
@@ -135,40 +138,34 @@ public class AddContactsFragment extends Fragment {
 
                 if (!name.isEmpty() && !phoneNo.isEmpty() && !email.isEmpty())
                 {
-                    if(!email.contains("example.com"))
+                    if (!email.contains("example.com"))
                     {
                         Toast.makeText(getActivity(), "Invalid email address", Toast.LENGTH_SHORT).show();
                     }
-
                     else
                     {
                         try
                         {
                             long phoneNoLong = Long.parseLong(phoneNo);
 
-                            Contact newContact = new Contact(phoneNoLong, name, email, R.drawable.cat);
+                            Contact newContact = new Contact(phoneNoLong, name, email, imageData);
 
                             ContactDAO contactDAO = MainActivity.database.contactDao();
                             contactDAO.insert(newContact);
 
                             mainActivityDataViewModel.changeFragment(MainActivityData.Fragments.CONTACTLIST_FRAGMENT);
                         }
-
-                        catch(NumberFormatException e)
+                        catch (NumberFormatException e)
                         {
                             Toast.makeText(getActivity(), "Invalid phone number", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
-
                 else
                 {
                     Toast.makeText(getActivity(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
                 }
             }
         });
-
-
     }
-
 }

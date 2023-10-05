@@ -1,6 +1,7 @@
 package com.example.contactmanagement;
 
-import android.util.Log;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +18,6 @@ public class ContactListRecyclerViewAdapter extends RecyclerView.Adapter<Contact
 
     public ContactListRecyclerViewAdapter(List<Contact> contactList) {
         this.contactList = contactList;
-        Log.d("ContactListAdapter", "Contact list size: " + contactList.size()); // Log the list size
     }
 
     @NonNull
@@ -33,9 +33,17 @@ public class ContactListRecyclerViewAdapter extends RecyclerView.Adapter<Contact
         holder.nameTextView.setText(contact.getName());
         holder.phoneTextView.setText(String.valueOf(contact.getPhoneNo()));
         holder.emailTextView.setText(contact.getEmail());
-        holder.contactImage.setImageResource(contact.getPhotoResourceId());
-        Log.d("ContactListAdapter", "Binding item at position: " + position); // Log the binding process
 
+        byte[] photoData = contact.getPhotoData();
+        if (photoData != null && photoData.length > 0)
+        {
+            Bitmap bitmap = BitmapFactory.decodeByteArray(photoData, 0, photoData.length);
+            holder.contactImage.setImageBitmap(bitmap);
+        }
+        else
+        {
+            holder.contactImage.setImageResource(R.drawable.cat);
+        }
         holder.deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -48,8 +56,7 @@ public class ContactListRecyclerViewAdapter extends RecyclerView.Adapter<Contact
         holder.editButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (onDeleteClickListener != null)
-                {
+                if (onDeleteClickListener != null) {
                     onDeleteClickListener.onEditClick(position);
                 }
             }
@@ -80,14 +87,12 @@ public class ContactListRecyclerViewAdapter extends RecyclerView.Adapter<Contact
         }
     }
 
-    // Interface for delete button click listener
     public interface OnDeleteClickListener {
         void onDeleteClick(int position);
 
         void onEditClick(int position);
     }
 
-    // Setter method for onDeleteClickListener
     public void setOnDeleteClickListener(OnDeleteClickListener listener) {
         this.onDeleteClickListener = listener;
     }

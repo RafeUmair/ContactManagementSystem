@@ -16,14 +16,14 @@ public class Contact {
     @ColumnInfo(name = "email")
     private String email;
 
-    @ColumnInfo(name = "photoResourceId")
-    private int photoResourceId;
+    @ColumnInfo(name = "photoData", typeAffinity = ColumnInfo.BLOB)
+    private byte[] photoData;
 
-    public Contact(long phoneNo, String name, String email, int photoResourceId) {
+    public Contact(long phoneNo, String name, String email, byte[] photoData) {
         this.phoneNo = phoneNo;
         this.name = name;
         this.email = email;
-        this.photoResourceId = photoResourceId;
+        this.photoData = photoData;
     }
 
     public long getPhoneNo() {
@@ -50,11 +50,13 @@ public class Contact {
         this.email = email;
     }
 
-    public int getPhotoResourceId() {
-        return photoResourceId;
+    public byte[] getPhotoData()
+    {
+        return photoData;
     }
 
-    public void setPhotoResourceId(int photoResourceId) {
-        this.photoResourceId = photoResourceId;
+    public void setPhotoData(byte[] photoData)
+    {
+        this.photoData = photoData;
     }
 }

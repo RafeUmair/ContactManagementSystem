@@ -1,5 +1,7 @@
 package com.example.contactmanagement;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -26,13 +28,13 @@ public class EditContactsFragment extends Fragment {
     private static final String ARG_PARAM2 = "param2";
 
     // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
     private Contact contact;
-    EditText contactNameEditText;
-    EditText phoneNoEditText;
-    EditText emailEditText;
-    ImageView imageEdit;
+    private EditText contactNameEditText;
+    private EditText phoneNoEditText;
+    private EditText emailEditText;
+    private static final int CAMERA_PIC_REQUEST = 1;
+    private ImageView profileImage;
+    private byte[] imageData;
 
     public EditContactsFragment() {
         // Required empty public constructor
@@ -61,53 +63,58 @@ public class EditContactsFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
         View rootView = inflater.inflate(R.layout.fragment_edit_contacts, container, false);
 
         contactNameEditText = rootView.findViewById(R.id.ContactName);
         phoneNoEditText = rootView.findViewById(R.id.phoneNO);
         emailEditText = rootView.findViewById(R.id.EmailAddress);
-        imageEdit = rootView.findViewById(R.id.imageView);
+        profileImage = rootView.findViewById(R.id.imageView);
 
         contactNameEditText.setText(contact.getName());
         phoneNoEditText.setText(String.valueOf(contact.getPhoneNo()));
         emailEditText.setText(contact.getEmail());
-        imageEdit.setImageResource(contact.getPhotoResourceId());
+
+        byte[] photoData = contact.getPhotoData();
+
+        if (photoData != null && photoData.length > 0)
+        {
+            Bitmap bitmap = BitmapFactory.decodeByteArray(photoData, 0, photoData.length);
+            profileImage.setImageBitmap(bitmap);
+        }
+
+        else
+        {
+            profileImage.setImageResource(R.drawable.cat);
+        }
 
         Button editContactButton = rootView.findViewById(R.id.EditContactButton);
-        Button GobackEditButton = rootView.findViewById(R.id.EditBackButton);
+        Button goBackEditButton = rootView.findViewById(R.id.EditBackButton);
 
-        setupListeners(GobackEditButton, editContactButton);
+        setupListeners(goBackEditButton, editContactButton);
         return rootView;
     }
 
     public void updateContact(Contact oldContact, long newPhoneNumber, String updatedName, String updatedEmail)
     {
-        Contact newContact = new Contact(newPhoneNumber, updatedName, updatedEmail, oldContact.getPhotoResourceId());
+        Contact newContact = new Contact(newPhoneNumber, updatedName, updatedEmail, oldContact.getPhotoData());
         ContactDAO contactDAO = MainActivity.database.contactDao();
         contactDAO.insert(newContact);
 
         newContact.setName(updatedName);
         newContact.setEmail(updatedEmail);
-        newContact.setPhotoResourceId(oldContact.getPhotoResourceId());
+        newContact.setPhotoData(oldContact.getPhotoData());
 
         contactDAO.update(newContact);
         contactDAO.delete(oldContact);
     }
-    private void setupListeners(Button GobackEditButton, Button editContactButton)
+
+    private void setupListeners(Button goBackEditButton, Button editContactButton)
     {
         MainActivityData mainActivityDataViewModel = new ViewModelProvider(getActivity()).get(MainActivityData.class);
 
-        GobackEditButton.setOnClickListener(new View.OnClickListener()
+        goBackEditButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view) {
@@ -118,31 +125,24 @@ public class EditContactsFragment extends Fragment {
         editContactButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
-            public void onClick(View view)
-            {
+            public void onClick(View view) {
                 String updatedName = contactNameEditText.getText().toString();
                 String updatedEmail = emailEditText.getText().toString();
                 String phoneNo = phoneNoEditText.getText().toString();
 
-                if (updatedName.isEmpty() || phoneNo.isEmpty() || updatedEmail.isEmpty())
-                {
+                if (updatedName.isEmpty() || phoneNo.isEmpty() || updatedEmail.isEmpty()) {
                     Toast.makeText(getActivity(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
                 }
-                else if (!updatedEmail.contains("example.com"))
-                {
+                else if (!updatedEmail.contains("example.com")) {
                     Toast.makeText(getActivity(), "Invalid email address", Toast.LENGTH_SHORT).show();
                 }
-                else
-                {
-                    try
-                    {
+                else {
+                    try {
                         long phoneNoLong = Long.parseLong(phoneNo);
-                        if (phoneNoLong != contact.getPhoneNo()) {
+                        if (phoneNoLong != contact.getPhoneNo())
+                        {
                             updateContact(contact, phoneNoLong, updatedName, updatedEmail);
                         }
-
-                        contact.setName(updatedName);
-                        contact.setEmail(updatedEmail);
 
                         ContactDAO contactDAO = MainActivity.database.contactDao();
                         contactDAO.update(contact);
