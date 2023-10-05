@@ -17,6 +17,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     private ContactListFragment ContactList = new ContactListFragment();
     private AddContactsFragment AddContacts = new AddContactsFragment();
+    private EditContactsFragment EditContacts = new EditContactsFragment();
     public static ContactDatabase database;
 
     private List<Contact> contactList; // Declare the list here
@@ -73,6 +74,24 @@ public class MainActivity extends AppCompatActivity {
             fm.beginTransaction().replace(R.id.ContactList_Container, AddContacts).commit();
         }
     }
+
+    private void loadEditContactsScreen()
+    {
+        FragmentManager fm = getSupportFragmentManager();
+        Fragment frag = fm.findFragmentById(R.id.ContactList_Container);
+
+        View ContactListContainer = findViewById(R.id.ContactList_Container);
+        if (frag == null)
+        {
+            fm.beginTransaction().add(R.id.ContactList_Container, EditContacts).commit();
+        }
+
+        else
+        {
+            fm.beginTransaction().replace(R.id.ContactList_Container, EditContacts).commit();
+        }
+    }
+
     private void setupFragmentSwapper(MainActivityData mainActivityDataViewModel) {
         mainActivityDataViewModel.clickedValue.observe(this, new Observer<MainActivityData.Fragments>() {
             @Override
@@ -84,6 +103,8 @@ public class MainActivity extends AppCompatActivity {
                     case ADDCONTACTS_FRAGMENT:
                         loadAddContactsScreen();
                         break;
+                    case EDITCONTACTS_FRAGMENT:
+                        loadEditContactsScreen();
                 }
             }
         });

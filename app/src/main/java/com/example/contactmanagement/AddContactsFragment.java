@@ -3,10 +3,12 @@ package com.example.contactmanagement;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -58,7 +60,31 @@ public class AddContactsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_add_contacts, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_add_contacts, container, false);
+
+        Button GoBack = rootView.findViewById(R.id.AddBackButton);
+        Button AddContacts = rootView.findViewById(R.id.AddContactButton);
+
+        setupListeners(GoBack, AddContacts);
+        return rootView;
+    }
+
+    private void setupListeners(Button GoBack, Button AddContacts)
+    {
+        MainActivityData mainActivityDataViewModel = new ViewModelProvider(getActivity()).get(MainActivityData.class);
+
+        GoBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mainActivityDataViewModel.changeFragment(MainActivityData.Fragments.CONTACTLIST_FRAGMENT);
+            }
+        });
+
+        AddContacts.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mainActivityDataViewModel.changeFragment(MainActivityData.Fragments.CONTACTLIST_FRAGMENT);
+            }
+        });
     }
 }

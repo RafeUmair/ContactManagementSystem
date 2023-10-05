@@ -22,5 +22,6 @@ public class MainActivityData extends ViewModel {
     public enum Fragments {
         CONTACTLIST_FRAGMENT,
         ADDCONTACTS_FRAGMENT,
+        EDITCONTACTS_FRAGMENT,
     }
 }
