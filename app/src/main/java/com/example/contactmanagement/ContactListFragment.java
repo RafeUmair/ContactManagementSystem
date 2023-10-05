@@ -137,7 +137,8 @@ public class ContactListFragment extends Fragment {
         });
     }
 
-    private void importContactsFromDevice() {
+    private void importContactsFromDevice()
+    {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.READ_CONTACTS}, MY_PERMISSIONS_REQUEST_READ_CONTACTS);
             return;
@@ -159,35 +160,27 @@ public class ContactListFragment extends Fragment {
                     String emailAddress = getEmailAddress(cursor);
                     long phoneNoLong = Long.parseLong(phoneNumber);
 
-                    if (!isContactDuplicate(contactName))
-                    {
+                    if (!isContactDuplicate(phoneNoLong)) {
                         Contact newContact = new Contact(phoneNoLong, contactName, emailAddress, imageToByteArray(requireContext(), R.drawable.cat));
 
                         ContactDAO contactDAO = MainActivity.database.contactDao();
                         contactDAO.insert(newContact);
+                        Toast.makeText(requireContext(), "Contacts imported successfully!", Toast.LENGTH_SHORT).show();
+                        contactList.add(newContact);
+                        adapter.notifyDataSetChanged();
+                    } else {
+                        Toast.makeText(requireContext(), "Duplicate phone number not allowed: " + phoneNumber, Toast.LENGTH_SHORT).show();
                     }
                 }
-            }
-            finally
-            {
+            } finally {
                 cursor.close();
             }
-
-            adapter.notifyDataSetChanged();
-            Toast.makeText(requireContext(), "Contacts imported successfully!", Toast.LENGTH_SHORT).show();
-        }
-        else
-        {
-            Toast.makeText(requireContext(), "No contacts found on the device.", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private boolean isContactDuplicate(String contactName)
-    {
-        for (Contact contact : contactList)
-        {
-            if (contact.getName().equalsIgnoreCase(contactName))
-            {
+    private boolean isContactDuplicate(long phoneNo) {
+        for (Contact contact : contactList) {
+            if (contact.getPhoneNo() == phoneNo) {
                 return true;
             }
         }
