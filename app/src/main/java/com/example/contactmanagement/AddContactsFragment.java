@@ -88,7 +88,7 @@ public class AddContactsFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-                startActivityForResult(intent, CAMERA_PIC_REQUEST); // Use startActivityForResult
+                startActivityForResult(intent, CAMERA_PIC_REQUEST);
             }
         });
 

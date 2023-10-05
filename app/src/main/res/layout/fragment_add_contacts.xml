@@ -127,7 +127,7 @@
         android:layout_height="100dp"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
-        android:text="Open Camera"
+        android:text="Add Picture"
         app:layout_constraintBottom_toTopOf="@+id/ContactName"
         app:layout_constraintEnd_toStartOf="@+id/profileImage"
         app:layout_constraintHorizontal_bias="0.533"

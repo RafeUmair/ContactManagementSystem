@@ -1,5 +1,10 @@
 package com.example.contactmanagement;
 
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -7,6 +12,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,13 +72,12 @@ public class ContactListFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-    {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_contact_list, container, false);
         RecyclerView recyclerView = rootView.findViewById(R.id.recyclerView);
         Button AddButton = rootView.findViewById(R.id.AddButton);
-
-        setupListeners(AddButton);
+        Button ImportButton = rootView.findViewById(R.id.importButton);
+        setupListeners(AddButton, ImportButton);
 
         ContactDAO contactDAO = MainActivity.database.contactDao();
         contactList = contactDAO.getAllContacts();
@@ -83,9 +89,9 @@ public class ContactListFragment extends Fragment {
         layoutManager.setOrientation(RecyclerView.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);
 
-        adapter.setOnDeleteClickListener(new ContactListRecyclerViewAdapter.OnDeleteClickListener()
-        {
+        adapter.setOnDeleteClickListener(new ContactListRecyclerViewAdapter.OnDeleteClickListener() {
             MainActivityData mainActivityDataViewModel = new ViewModelProvider(getActivity()).get(MainActivityData.class);
+
             @Override
             public void onDeleteClick(int position) {
                 long phoneNoToDelete = contactList.get(position).getPhoneNo();
@@ -95,8 +101,7 @@ public class ContactListFragment extends Fragment {
             }
 
             @Override
-            public void onEditClick(int position)
-            {
+            public void onEditClick(int position) {
                 Contact selectedContact = contactList.get(position);
                 EditContactsFragment editFragment = new EditContactsFragment(selectedContact);
                 getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.ContactList_Container, editFragment).addToBackStack(null).commit();
@@ -105,7 +110,7 @@ public class ContactListFragment extends Fragment {
         return rootView;
     }
 
-    private void setupListeners(Button AddButton) {
+    private void setupListeners(Button AddButton, Button ImportButton) {
         MainActivityData mainActivityDataViewModel = new ViewModelProvider(getActivity()).get(MainActivityData.class);
 
         AddButton.setOnClickListener(new View.OnClickListener() {
@@ -114,5 +119,138 @@ public class ContactListFragment extends Fragment {
                 mainActivityDataViewModel.changeFragment(MainActivityData.Fragments.ADDCONTACTS_FRAGMENT);
             }
         });
+
+        ImportButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+                startActivityForResult(intent, 1);
+            }
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private void getContactList() {
+        ContentResolver cr = requireActivity().getContentResolver();
+        Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI,
+                null, null, null, null);
+
+        if ((cur != null ? cur.getCount() : 0) > 0) {
+            while (cur != null && cur.moveToNext()) {
+                String id = cur.getString(
+                        cur.getColumnIndex(ContactsContract.Contacts._ID));
+                String name = cur.getString(cur.getColumnIndex(
+                        ContactsContract.Contacts.DISPLAY_NAME));
+
+                if (cur.getInt(cur.getColumnIndex(
+                        ContactsContract.Contacts.HAS_PHONE_NUMBER)) > 0) {
+                    Cursor pCur = cr.query(
+                            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                            null,
+                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                            new String[]{id}, null);
+                    while (pCur.moveToNext()) {
+                        String phoneNo = pCur.getString(pCur.getColumnIndex(
+                                ContactsContract.CommonDataKinds.Phone.NUMBER));
+                        Log.i("ContactListFragment", "Name: " + name);
+                        Log.i("ContactListFragment", "Phone Number: " + phoneNo);
+                    }
+                    pCur.close();
+                }
+            }
+        }
+        if (cur != null) {
+            cur.close();
+        }
     }
 }
+
+
+   /* @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
+            Uri contactData = data.getData();
+            if (contactData != null) {
+                ContentResolver cr = requireActivity().getContentResolver();
+                Cursor cursor = cr.query(contactData, null, null, null, null);
+                if (cursor != null && cursor.moveToFirst()) {
+                    // Get the contact's name
+                    int nameColumnIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
+                    String name = (nameColumnIndex != -1) ? cursor.getString(nameColumnIndex) : "";
+
+                    // Get the contact's email (if available)
+                    String email = "";
+                    int emailColumnIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA);
+                    if (emailColumnIndex != -1) {
+                        Cursor emailCursor = cr.query(
+                                ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+                                null,
+                                ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
+                                new String[]{cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID))},
+                                null
+                        );
+                        if (emailCursor != null && emailCursor.moveToFirst()) {
+                            email = emailCursor.getString(emailCursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
+                            emailCursor.close();
+                        }
+                    }
+
+                    // Get the contact's phone number (if available)
+                    String phone = "";
+                    int phoneColumnIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+                    if (phoneColumnIndex != -1) {
+                        Cursor phoneCursor = cr.query(
+                                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                                null,
+                                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                                new String[]{cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID))},
+                                null
+                        );
+                        if (phoneCursor != null && phoneCursor.moveToFirst()) {
+                            phone = phoneCursor.getString(phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                            phoneCursor.close();
+                        }
+                    }
+
+                    // Now, you have the name, email, and phone number
+                    Log.i("ContactListFragment", "Name: " + name);
+                    if (!email.isEmpty()) {
+                        Log.i("ContactListFragment", "Email: " + email);
+                    }
+                    if (!phone.isEmpty()) {
+                        Log.i("ContactListFragment", "Phone Number: " + phone);
+                    }
+
+                    // Close the cursor
+                    cursor.close();
+                }
+            }
+        }
+    }*/
+
+

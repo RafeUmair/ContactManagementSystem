@@ -1,5 +1,7 @@
 package com.example.contactmanagement;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -15,6 +17,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link EditContactsFragment#newInstance} factory method to
@@ -22,49 +26,25 @@ import android.widget.Toast;
  */
 public class EditContactsFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
     private Contact contact;
     private EditText contactNameEditText;
     private EditText phoneNoEditText;
     private EditText emailEditText;
-    private static final int CAMERA_PIC_REQUEST = 1;
     private ImageView profileImage;
-    private byte[] imageData;
+    private byte[] imageData = new byte[0]; // Initialize as an empty byte array
+
+    private static final int CAMERA_PIC_REQUEST = 1;
 
     public EditContactsFragment() {
         // Required empty public constructor
     }
 
-    public EditContactsFragment(Contact contact)
-    {
+    public EditContactsFragment(Contact contact) {
         this.contact = contact;
-    }
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment EditContactsFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static EditContactsFragment newInstance(String param1, String param2) {
-        EditContactsFragment fragment = new EditContactsFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-    {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_edit_contacts, container, false);
 
         contactNameEditText = rootView.findViewById(R.id.ContactName);
@@ -78,39 +58,36 @@ public class EditContactsFragment extends Fragment {
 
         byte[] photoData = contact.getPhotoData();
 
-        if (photoData != null && photoData.length > 0)
-        {
+        if (photoData != null && photoData.length > 0) {
             Bitmap bitmap = BitmapFactory.decodeByteArray(photoData, 0, photoData.length);
             profileImage.setImageBitmap(bitmap);
-        }
-
-        else
-        {
+        } else {
             profileImage.setImageResource(R.drawable.cat);
         }
 
+        Button editPictureButton = rootView.findViewById(R.id.editPictureBtn);
         Button editContactButton = rootView.findViewById(R.id.EditContactButton);
         Button goBackEditButton = rootView.findViewById(R.id.EditBackButton);
 
-        setupListeners(goBackEditButton, editContactButton);
+        setupListeners(goBackEditButton, editContactButton, editPictureButton);
         return rootView;
     }
 
     public void updateContact(Contact oldContact, long newPhoneNumber, String updatedName, String updatedEmail)
     {
-        Contact newContact = new Contact(newPhoneNumber, updatedName, updatedEmail, oldContact.getPhotoData());
+        Contact newContact = new Contact(newPhoneNumber, updatedName, updatedEmail, imageData);
         ContactDAO contactDAO = MainActivity.database.contactDao();
         contactDAO.insert(newContact);
 
         newContact.setName(updatedName);
         newContact.setEmail(updatedEmail);
-        newContact.setPhotoData(oldContact.getPhotoData());
+        newContact.setPhotoData(imageData);
 
         contactDAO.update(newContact);
         contactDAO.delete(oldContact);
     }
 
-    private void setupListeners(Button goBackEditButton, Button editContactButton)
+    private void setupListeners(Button goBackEditButton, Button editContactButton, Button EditPicture)
     {
         MainActivityData mainActivityDataViewModel = new ViewModelProvider(getActivity()).get(MainActivityData.class);
 
@@ -156,5 +133,27 @@ public class EditContactsFragment extends Fragment {
                 }
             }
         });
+        EditPicture.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+                startActivityForResult(intent, CAMERA_PIC_REQUEST);
+            }
+        });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CAMERA_PIC_REQUEST && resultCode == Activity.RESULT_OK) {
+            Bitmap image = (Bitmap) data.getExtras().get("data");
+            ImageView imageView = getView().findViewById(R.id.imageView); // Use the correct ImageView ID
+            imageView.setImageBitmap(image);
+
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            imageData = stream.toByteArray();
+        }
     }
 }
