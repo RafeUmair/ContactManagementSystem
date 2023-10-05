@@ -1,5 +1,7 @@
 package com.example.contactmanagement;
 
+import android.util.Log;
+
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -19,7 +21,8 @@ public class Contact {
     @ColumnInfo(name = "photoData", typeAffinity = ColumnInfo.BLOB)
     private byte[] photoData;
 
-    public Contact(long phoneNo, String name, String email, byte[] photoData) {
+    public Contact(long phoneNo, String name, String email, byte[] photoData)
+    {
         this.phoneNo = phoneNo;
         this.name = name;
         this.email = email;

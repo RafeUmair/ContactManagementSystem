@@ -30,7 +30,8 @@ public class MainActivity extends AppCompatActivity {
         database = ContactDBInstance.getDatabase(this);
 
         ContactDAO contactDAO = database.contactDao();
-        if (contactDAO.getAllContacts().isEmpty()) {
+        if (contactDAO.getAllContacts().isEmpty())
+        {
             ContactDatabase.insertSampleData(database, this);
         }
 
