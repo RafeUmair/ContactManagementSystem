@@ -8,7 +8,7 @@
     tools:context=".AddContactsFragment" >
 
     <Button
-        android:id="@+id/AddContactButton"
+        android:id="@+id/EditContactButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Add Contact"
@@ -20,7 +20,7 @@
         app:layout_constraintVertical_bias="0.406" />
 
     <Button
-        android:id="@+id/AddBackButton"
+        android:id="@+id/EditBackButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="GoBack"

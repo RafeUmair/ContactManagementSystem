@@ -67,8 +67,8 @@ public class AddContactsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_add_contacts, container, false);
 
-        Button GoBack = rootView.findViewById(R.id.AddBackButton);
-        Button AddContacts = rootView.findViewById(R.id.AddContactButton);
+        Button GoBack = rootView.findViewById(R.id.EditBackButton);
+        Button AddContacts = rootView.findViewById(R.id.EditContactButton);
         nameEditText = rootView.findViewById(R.id.ContactName);
         phoneNoEditText = rootView.findViewById(R.id.phoneNO);
         emailEditText = rootView.findViewById(R.id.EmailAddress);

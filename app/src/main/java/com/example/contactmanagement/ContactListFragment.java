@@ -6,7 +6,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.example.contactmanagement.ContactListRecyclerViewAdapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -68,7 +67,8 @@ public class ContactListFragment extends Fragment {
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
         View rootView = inflater.inflate(R.layout.fragment_contact_list, container, false);
         RecyclerView recyclerView = rootView.findViewById(R.id.recyclerView);
         Button AddButton = rootView.findViewById(R.id.AddButton);
@@ -85,8 +85,9 @@ public class ContactListFragment extends Fragment {
         layoutManager.setOrientation(RecyclerView.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);
 
-        // Set up the OnDeleteClickListener for the adapter
-        adapter.setOnDeleteClickListener(new ContactListRecyclerViewAdapter.OnDeleteClickListener() {
+        adapter.setOnDeleteClickListener(new ContactListRecyclerViewAdapter.OnDeleteClickListener()
+        {
+            MainActivityData mainActivityDataViewModel = new ViewModelProvider(getActivity()).get(MainActivityData.class);
             @Override
             public void onDeleteClick(int position) {
                 long phoneNoToDelete = contactList.get(position).getPhoneNo();
@@ -94,14 +95,17 @@ public class ContactListFragment extends Fragment {
                 contactList.remove(position);
                 adapter.notifyItemRemoved(position);
             }
+
+            @Override
+            public void onEditClick(int position)
+            {
+                Contact selectedContact = contactList.get(position);
+                EditContactsFragment editFragment = new EditContactsFragment(selectedContact);
+                getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.ContactList_Container, editFragment).addToBackStack(null).commit();
+            }
         });
-
-
         return rootView;
     }
-
-
-
 
     private void setupListeners(Button AddButton) {
         MainActivityData mainActivityDataViewModel = new ViewModelProvider(getActivity()).get(MainActivityData.class);
@@ -113,6 +117,4 @@ public class ContactListFragment extends Fragment {
             }
         });
     }
-
-
 }

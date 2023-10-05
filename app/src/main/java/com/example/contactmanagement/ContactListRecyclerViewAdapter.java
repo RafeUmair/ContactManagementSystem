@@ -13,7 +13,7 @@ import java.util.List;
 
 public class ContactListRecyclerViewAdapter extends RecyclerView.Adapter<ContactListRecyclerViewAdapter.ContactViewHolder> {
     private List<Contact> contactList;
-    private OnDeleteClickListener onDeleteClickListener; // Add this field
+    private OnDeleteClickListener onDeleteClickListener;
 
     public ContactListRecyclerViewAdapter(List<Contact> contactList) {
         this.contactList = contactList;
@@ -41,6 +41,16 @@ public class ContactListRecyclerViewAdapter extends RecyclerView.Adapter<Contact
             public void onClick(View view) {
                 if (onDeleteClickListener != null) {
                     onDeleteClickListener.onDeleteClick(position);
+                }
+            }
+        });
+
+        holder.editButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (onDeleteClickListener != null)
+                {
+                    onDeleteClickListener.onEditClick(position);
                 }
             }
         });
@@ -73,6 +83,8 @@ public class ContactListRecyclerViewAdapter extends RecyclerView.Adapter<Contact
     // Interface for delete button click listener
     public interface OnDeleteClickListener {
         void onDeleteClick(int position);
+
+        void onEditClick(int position);
     }
 
     // Setter method for onDeleteClickListener

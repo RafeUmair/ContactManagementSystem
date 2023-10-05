@@ -3,10 +3,13 @@ package com.example.contactmanagement;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -23,11 +26,19 @@ public class EditContactsFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private Contact contact;
+    EditText contactNameEditText;
+    EditText phoneNoEditText;
+    EditText emailEditText;
 
     public EditContactsFragment() {
         // Required empty public constructor
     }
 
+    public EditContactsFragment(Contact contact)
+    {
+        this.contact = contact;
+    }
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -56,9 +67,53 @@ public class EditContactsFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_edit_contacts, container, false);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.fragment_edit_contacts, container, false);
+
+        contactNameEditText = rootView.findViewById(R.id.ContactName);
+        phoneNoEditText = rootView.findViewById(R.id.phoneNO);
+        emailEditText = rootView.findViewById(R.id.EmailAddress);
+
+        contactNameEditText.setText(contact.getName());
+        phoneNoEditText.setText(String.valueOf(contact.getPhoneNo()));
+        emailEditText.setText(contact.getEmail());
+
+        Button editContactButton = rootView.findViewById(R.id.EditContactButton);
+        Button GobackEditButton = rootView.findViewById(R.id.EditBackButton);
+
+        setupListeners(GobackEditButton, editContactButton);
+        return rootView;
+    }
+
+    private void setupListeners(Button GobackEditButton, Button editContactButton)
+    {
+        MainActivityData mainActivityDataViewModel = new ViewModelProvider(getActivity()).get(MainActivityData.class);
+
+        GobackEditButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view) {
+                mainActivityDataViewModel.changeFragment(MainActivityData.Fragments.CONTACTLIST_FRAGMENT);
+            }
+        });
+
+        editContactButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view)
+            {
+                String updatedName = contactNameEditText.getText().toString();
+                String updatedEmail = emailEditText.getText().toString();
+                String updatePhoneNO = phoneNoEditText.getText().toString().trim();
+                long phoneNoLong = Long.parseLong(updatePhoneNO);
+
+                contact.setName(updatedName);
+                contact.setEmail(updatedEmail);
+                contact.setPhoneNo(phoneNoLong);
+
+                ContactDAO contactDAO = MainActivity.database.contactDao();
+                contactDAO.update(contact);
+                getActivity().getSupportFragmentManager().popBackStack();
+            }
+        });
     }
 }
