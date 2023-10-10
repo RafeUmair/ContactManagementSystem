@@ -39,7 +39,8 @@ public class EditContactsFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public EditContactsFragment(Contact contact) {
+    public EditContactsFragment(Contact contact)
+    {
         this.contact = contact;
     }
 
@@ -58,10 +59,14 @@ public class EditContactsFragment extends Fragment {
 
         byte[] photoData = contact.getPhotoData();
 
-        if (photoData != null && photoData.length > 0) {
+        if (photoData != null && photoData.length > 0)
+        {
             Bitmap bitmap = BitmapFactory.decodeByteArray(photoData, 0, photoData.length);
             profileImage.setImageBitmap(bitmap);
-        } else {
+        }
+
+        else
+        {
             profileImage.setImageResource(R.drawable.cat);
         }
 
@@ -107,14 +112,18 @@ public class EditContactsFragment extends Fragment {
                 String updatedEmail = emailEditText.getText().toString();
                 String phoneNo = phoneNoEditText.getText().toString();
 
-                if (updatedName.isEmpty() || phoneNo.isEmpty() || updatedEmail.isEmpty()) {
+                if (updatedName.isEmpty() || phoneNo.isEmpty() || updatedEmail.isEmpty())
+                {
                     Toast.makeText(getActivity(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
                 }
-                else if (!updatedEmail.contains("example.com")) {
+                else if (!updatedEmail.contains("example.com"))
+                {
                     Toast.makeText(getActivity(), "Invalid email address", Toast.LENGTH_SHORT).show();
                 }
-                else {
-                    try {
+                else
+                {
+                    try
+                    {
                         long phoneNoLong = Long.parseLong(phoneNo);
                         if (phoneNoLong != contact.getPhoneNo())
                         {
@@ -136,7 +145,8 @@ public class EditContactsFragment extends Fragment {
         EditPicture.setOnClickListener(new View.OnClickListener()
         {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view)
+            {
                 Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
                 startActivityForResult(intent, CAMERA_PIC_REQUEST);
             }
@@ -148,12 +158,14 @@ public class EditContactsFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CAMERA_PIC_REQUEST && resultCode == Activity.RESULT_OK) {
             Bitmap image = (Bitmap) data.getExtras().get("data");
-            ImageView imageView = getView().findViewById(R.id.imageView); // Use the correct ImageView ID
+            ImageView imageView = getView().findViewById(R.id.imageView);
             imageView.setImageBitmap(image);
 
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             image.compress(Bitmap.CompressFormat.PNG, 100, stream);
             imageData = stream.toByteArray();
+
+            contact.setPhotoData(imageData);
         }
     }
 }

@@ -168,7 +168,10 @@ public class ContactListFragment extends Fragment {
                         Toast.makeText(requireContext(), "Contacts imported successfully!", Toast.LENGTH_SHORT).show();
                         contactList.add(newContact);
                         adapter.notifyDataSetChanged();
-                    } else {
+                    }
+                    
+                    else
+                    {
                         Toast.makeText(requireContext(), "Duplicate phone number not allowed: " + phoneNumber, Toast.LENGTH_SHORT).show();
                     }
                 }
