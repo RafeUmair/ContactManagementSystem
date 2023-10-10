@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -135,9 +136,9 @@ public class AddContactsFragment extends Fragment {
                 String name = nameEditText.getText().toString();
                 String phoneNo = phoneNoEditText.getText().toString().trim();
                 String email = emailEditText.getText().toString();
+                long phoneNoLong;
 
-                if (!name.isEmpty() && !phoneNo.isEmpty() && !email.isEmpty())
-                {
+                if (!name.isEmpty() && !phoneNo.isEmpty() && !email.isEmpty()) {
                     if (!email.contains("example.com"))
                     {
                         Toast.makeText(getActivity(), "Invalid email address", Toast.LENGTH_SHORT).show();
@@ -146,14 +147,22 @@ public class AddContactsFragment extends Fragment {
                     {
                         try
                         {
-                            long phoneNoLong = Long.parseLong(phoneNo);
+                            phoneNoLong = Long.parseLong(phoneNo);
 
-                            Contact newContact = new Contact(phoneNoLong, name, email, imageData);
+                            if (isPhoneNoExists(phoneNoLong))
+                            {
+                                Toast.makeText(getActivity(), "Phone number already exists", Toast.LENGTH_SHORT).show();
+                            }
 
-                            ContactDAO contactDAO = MainActivity.database.contactDao();
-                            contactDAO.insert(newContact);
+                            else
+                            {
+                                Contact newContact = new Contact(phoneNoLong, name, email, imageData);
 
-                            mainActivityDataViewModel.changeFragment(MainActivityData.Fragments.CONTACTLIST_FRAGMENT);
+                                ContactDAO contactDAO = MainActivity.database.contactDao();
+                                contactDAO.insert(newContact);
+
+                                mainActivityDataViewModel.changeFragment(MainActivityData.Fragments.CONTACTLIST_FRAGMENT);
+                            }
                         }
                         catch (NumberFormatException e)
                         {
@@ -167,5 +176,21 @@ public class AddContactsFragment extends Fragment {
                 }
             }
         });
+    }
+
+    private boolean isPhoneNoExists(long phoneNo)
+    {
+        MainActivityData mainActivityDataViewModel = new ViewModelProvider(getActivity()).get(MainActivityData.class);
+        ContactDAO contactDAO = MainActivity.database.contactDao();
+        List<Contact> contacts = contactDAO.getAllContacts();
+
+        for (Contact contact : contacts)
+        {
+            if (contact.getPhoneNo() == phoneNo)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

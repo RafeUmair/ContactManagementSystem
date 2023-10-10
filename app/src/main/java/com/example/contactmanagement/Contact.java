@@ -62,4 +62,5 @@ public class Contact {
     {
         this.photoData = photoData;
     }
+
 }
